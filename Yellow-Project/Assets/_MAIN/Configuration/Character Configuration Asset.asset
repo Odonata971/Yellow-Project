@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a969b3bf4e6f8e846a8158af05740ede, type: 3}
+  m_Name: Character Configuration Asset
+  m_EditorClassIdentifier: 
+  characters:
+  - name: Barrios
+    alias: b
+    characterType: 1
+    nameColor: {r: 0.990566, g: 0.7322968, b: 0, a: 1}
+    dialogueColor: {r: 0.8584906, g: 0.47061047, b: 0, a: 1}
+    nameFont: {fileID: 11400000, guid: a6a9963a494a04c47bfb712ccfd23da3, type: 2}
+    dialogueFont: {fileID: 11400000, guid: 3559ad840efc51c40b2f5aa7e8e9d283, type: 2}
+  - name: Charlene
+    alias: c
+    characterType: 0
+    nameColor: {r: 1, g: 0.5990566, b: 0.5990566, a: 1}
+    dialogueColor: {r: 1, g: 0.78828096, b: 0.6, a: 1}
+    nameFont: {fileID: 11400000, guid: 15e3ce0338434b14c86aaee9c60efd46, type: 2}
+    dialogueFont: {fileID: 11400000, guid: 9fde1c12e4615e74ba049e41af917902, type: 2}
+  - name: John
+    alias: j
+    characterType: 0
+    nameColor: {r: 0.68767285, g: 1, b: 0.6556604, a: 1}
+    dialogueColor: {r: 0.43173724, g: 0.9245283, b: 0.849672, a: 1}
+    nameFont: {fileID: 11400000, guid: 8c56fd0b4d5286345b1e72ed2f017125, type: 2}
+    dialogueFont: {fileID: 11400000, guid: bc1aff5a11f4e29449e05565bfe84b3e, type: 2}

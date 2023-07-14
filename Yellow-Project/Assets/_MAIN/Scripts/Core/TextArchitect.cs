@@ -156,7 +156,7 @@ public class TextArchitect
             tmpro.ForceMeshUpdate();
             preTextLength = tmpro.textInfo.characterCount;
         } else {
-            preTextLength = 0;
+            preTextLength = 0;  // Putain ca ce joue la le bug ou juste en bas
         }
 
         tmpro.text += targetText;
@@ -224,7 +224,7 @@ public class TextArchitect
                     continue;
                 }
 
-                int vertexIndex = textInfo.characterInfo[i].vertexIndex;
+                _ = textInfo.characterInfo[i].vertexIndex;
                 alphas[i] = Mathf.MoveTowards(alphas[i], 255, fadeSpeed);
 
                 for (int v = 0; v < 4; v++) {
@@ -238,12 +238,12 @@ public class TextArchitect
 
             tmpro.UpdateVertexData(TMP_VertexDataUpdateFlags.Colors32);
 
-            bool lastCharacterInvisible = !textInfo.characterInfo[maxRange - 1].isVisible;
+            bool lastCharacterIsInvisible = !textInfo.characterInfo[maxRange - 1].isVisible;
 
-            if (alphas[maxRange - 1] > alphaThreshold || lastCharacterInvisible) {
+            if (alphas[maxRange - 1] > alphaThreshold || lastCharacterIsInvisible) {
                 if (maxRange < textInfo.characterCount) {
                     maxRange++;
-                } else if (alphas[maxRange - 1] >= 255 || lastCharacterInvisible) {
+                } else if (alphas[maxRange - 1] >= 255 || lastCharacterIsInvisible) {
                     break;
                 }
             }

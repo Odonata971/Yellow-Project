@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DIALOGUE;
 
 namespace TESTING
 {
@@ -42,7 +43,7 @@ namespace TESTING
                 architect.Stop();
             }
 
-            string longLine = "Mon nom est Ozymandias, Roi des Rois. Voyez mon œuvre, ô puissants, et désespérez ! Auprès, rien ne demeure. Autour des ruines De cette colossale épave, infinis et nus, Les sables monotones et solitaires s’étendent au loin.";
+            string longLine = "Flies all green and buzzin' In this dungeon of despair Prisoners grumblin Piss they clothes Scratch their matted hair A tiny light from a window-hole Hundred yards away That all they ever get to know";
             
             if (Input.GetKeyDown(KeyCode.Space)) {
 

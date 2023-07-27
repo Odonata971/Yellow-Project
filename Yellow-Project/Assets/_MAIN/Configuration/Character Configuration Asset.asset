@@ -13,24 +13,24 @@ MonoBehaviour:
   m_Name: Character Configuration Asset
   m_EditorClassIdentifier: 
   characters:
-  - name: Barrios
-    alias: b
-    characterType: 1
-    nameColor: {r: 0.990566, g: 0.7322968, b: 0, a: 1}
-    dialogueColor: {r: 0.8584906, g: 0.47061047, b: 0, a: 1}
-    nameFont: {fileID: 11400000, guid: a6a9963a494a04c47bfb712ccfd23da3, type: 2}
-    dialogueFont: {fileID: 11400000, guid: 3559ad840efc51c40b2f5aa7e8e9d283, type: 2}
-  - name: Charlene
-    alias: c
-    characterType: 0
-    nameColor: {r: 1, g: 0.5990566, b: 0.5990566, a: 1}
-    dialogueColor: {r: 1, g: 0.78828096, b: 0.6, a: 1}
+  - name: Raelin
+    alias: r
+    characterType: 2
+    nameColor: {r: 1, g: 0, b: 0, a: 1}
+    dialogueColor: {r: 1, g: 0.58280706, b: 0, a: 1}
     nameFont: {fileID: 11400000, guid: 15e3ce0338434b14c86aaee9c60efd46, type: 2}
     dialogueFont: {fileID: 11400000, guid: 9fde1c12e4615e74ba049e41af917902, type: 2}
-  - name: John
-    alias: j
-    characterType: 0
-    nameColor: {r: 0.68767285, g: 1, b: 0.6556604, a: 1}
-    dialogueColor: {r: 0.43173724, g: 0.9245283, b: 0.849672, a: 1}
-    nameFont: {fileID: 11400000, guid: 8c56fd0b4d5286345b1e72ed2f017125, type: 2}
-    dialogueFont: {fileID: 11400000, guid: bc1aff5a11f4e29449e05565bfe84b3e, type: 2}
+  - name: Female Student 2
+    alias: fs2
+    characterType: 1
+    nameColor: {r: 0, g: 0.060203552, b: 1, a: 1}
+    dialogueColor: {r: 0, g: 0.77702427, b: 1, a: 1}
+    nameFont: {fileID: 11400000, guid: 95a4c5947ced08741b5936e7cbdf479d, type: 2}
+    dialogueFont: {fileID: 11400000, guid: 0781817f186ba7c46b311808bab7c11c, type: 2}
+  - name: Generic
+    alias: gen
+    characterType: 2
+    nameColor: {r: 0, g: 1, b: 0.05725074, a: 1}
+    dialogueColor: {r: 0.6531472, g: 1, b: 0, a: 1}
+    nameFont: {fileID: 11400000, guid: 1f9987afb925cfc46ad034ca97acfba8, type: 2}
+    dialogueFont: {fileID: 11400000, guid: 95a4c5947ced08741b5936e7cbdf479d, type: 2}

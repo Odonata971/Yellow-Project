@@ -12,7 +12,7 @@ namespace TESTING
 
         public TextArchitect.BuildMethod bm = TextArchitect.BuildMethod.instant;
 
-        int currentLine = 0;
+        // int currentLine = 0;
 
         string[] lines = new string[5] {
             "Flies all green and buzzin'",

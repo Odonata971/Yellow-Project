@@ -22,10 +22,12 @@ namespace CHARACTERS {
         private Coroutine co_transitioningLayer = null;
         private Coroutine co_levelingAlpha = null;
         private Coroutine co_changingColor = null;
-
+        private Coroutine co_flipping = null;
+        private bool isFacingLeft = Character.DEFAULT_ORIENTATION_IS_FACING_LEFT;
         public bool isTransitioningLayer => co_transitioningLayer != null;
         public bool isLevelingAlpha => co_levelingAlpha != null;
         public bool isChangingColor => co_changingColor != null;
+        public bool isFlipping => co_flipping != null;
 
         public CharacterSpriteLayer(Image defaultRenderer, int layer = 0) {
 
@@ -84,7 +86,7 @@ namespace CHARACTERS {
             if (isLevelingAlpha) {
                 return co_levelingAlpha;
             }
-
+         
             co_levelingAlpha = characterManager.StartCoroutine(RunAlphaLeveling());
 
             return co_levelingAlpha;
@@ -133,6 +135,17 @@ namespace CHARACTERS {
             return co_changingColor;
         }
 
+        public void StopChangingColor() {
+
+            if (!isChangingColor) {
+                return;
+            }
+
+            characterManager.StopCoroutine(co_changingColor);
+
+            co_changingColor = null;
+        }
+
         private IEnumerator ChangingColor(Color color, float speedMultiplier) {
 
             Color oldColor = renderer.color;
@@ -156,6 +169,73 @@ namespace CHARACTERS {
             }
 
             co_changingColor = null;
+        }
+        public Coroutine Flip(float speed = 1, bool immediate = false) {
+
+            if (isFacingLeft) {
+                return FaceRight(speed, immediate);
+            } else {
+                return FaceLeft(speed, immediate);
+            }
+        }
+
+        public Coroutine FaceLeft(float speed = 1, bool immediate = false) {
+
+            if (isFlipping) {
+                characterManager.StopCoroutine(co_flipping);
+            }
+
+            isFacingLeft = true;
+            co_flipping = characterManager.StartCoroutine(FaceDirection(isFacingLeft, speed, immediate));
+
+            return co_flipping;
+        }
+
+
+        public Coroutine FaceRight(float speed = 1, bool immediate = false) {
+
+            if (isFlipping) {
+                characterManager.StopCoroutine(co_flipping);
+            }
+
+            isFacingLeft = false;
+            co_flipping = characterManager.StartCoroutine(FaceDirection(isFacingLeft, speed, immediate));
+
+            return co_flipping;
+        }
+
+        private IEnumerator FaceDirection(bool faceLeft, float speedMultiplier, bool immediate) {
+
+            /* 
+             * TODO regler cette merde de bug
+             * Cette méthode marche bien mais il y a un problemes avec ls sprites character sans layer, 
+             * qui sont instanciées avec des scales chelou sur le layer et leur enfant, ce qui fait que remettre leur scale a 1,1,1 les fait grandir 
+             */ 
+
+            // float xScale = faceLeft ? 1 : -1; méthode avec le scale 
+            float xScale = faceLeft ? 0 : 180;
+            Vector3 newScale = new Vector3(0, xScale, 0); // si on fait avec le scale, mettre dans le premier champ et mettre les autres a 1 (xScale, 1, 1);
+
+            if (!immediate) {
+
+                Image newRenderer = CreateRenderer(renderer.transform.parent);
+
+                // newRenderer.transform.localScale = newScale;
+                newRenderer.transform.Rotate(newScale);
+
+                transitionSpeedMultiplier = speedMultiplier;
+                TryStartLevelingAlphas();
+
+                while (isLevelingAlpha) {
+                    yield return null;
+                }
+
+            } else {
+                // renderer.transform.localScale = newScale;
+                renderer.transform.Rotate(newScale);
+            }
+
+            co_flipping = null;
         }
     }
 }

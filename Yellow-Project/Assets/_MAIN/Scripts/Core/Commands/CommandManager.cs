@@ -4,14 +4,25 @@ using UnityEngine;
 using System.Reflection;
 using System.Linq;
 using System;
+using UnityEngine.Events;
+using CHARACTERS;
 
 namespace COMMANDS {
     public class CommandManager : MonoBehaviour {
+
+        private const char SUB_COMMAND_IDENTIFIER = '.';
+        public const string DATABASE_CHARACTERS_BASE = "characters";
+        public const string DATABASE_CHARACTERS_SPRITE = "characters_sprite";
+        public const string DATABASE_CHARACTERS_LIVE2D = "characters_live2D";
+        public const string DATABASE_CHARACTERS_MODEL3D = "characters_model3D";
+
         public static CommandManager instance { get; private set; }
-        private static Coroutine process = null;
-        private static bool isRunningProcess => process != null;
 
         private CommandDatabase database;
+        private Dictionary<string, CommandDatabase> subDatabases = new Dictionary<string, CommandDatabase>();
+
+        private List<CommandProcess> activeProcesses = new List<CommandProcess>();
+        private CommandProcess topProcess => activeProcesses.Last();
 
         private void Awake() {
 
@@ -36,7 +47,11 @@ namespace COMMANDS {
             }
         }
 
-        public Coroutine Execute(string commandName, params string[] args) {
+        public CoroutineWrapper Execute(string commandName, params string[] args) {
+
+            if (commandName.Contains(SUB_COMMAND_IDENTIFIER)) {
+                return ExecuteSubCommand(commandName, args);
+            }
 
             Delegate command = database.GetCommand(commandName);
 
@@ -47,46 +62,179 @@ namespace COMMANDS {
             return StartProcess(commandName, command, args);
         }
 
-        private Coroutine StartProcess(string commandName, Delegate command, string[] args) {
+        private CoroutineWrapper ExecuteSubCommand(string commandName, string[] args) {
 
-            StopCurrentProcess();
+            string[] parts = commandName.Split(SUB_COMMAND_IDENTIFIER);
+            string databaseName = string.Join(SUB_COMMAND_IDENTIFIER, parts.Take(parts.Length - 1));
+            string subCommandName = parts.Last();
 
-            process = StartCoroutine(RunningProcess(command, args));
+            if (subDatabases.ContainsKey(databaseName)) {
 
-            return process;
-        }
+                Delegate command = subDatabases[databaseName].GetCommand(subCommandName);
+                if (command != null) {
 
-        private void StopCurrentProcess() {
+                    return StartProcess(commandName, command, args);
 
-            if (process != null) {
-                StopCoroutine(process);
+                } else {
+
+                    Debug.LogError($"No command called '{subCommandName}' was found in sub database '{databaseName}'");
+                    return null;
+                }
             }
 
-            process = null;
+            string characterName = databaseName;
+            // If we've made it here then we should try to run as a character command
+            if (CharacterManager.instance.HasCharacter(characterName)) {
+
+                List<string> newArgs = new List<string>(args);
+                newArgs.Insert(0, characterName);
+                args = newArgs.ToArray();
+
+                return ExecuteCharacterCommand(subCommandName, args);
+            }
+
+            Debug.LogError($"No sub database called '{databaseName}' exists! Command '{subCommandName}' could not be run.");
+            return null;
         }
 
-        private IEnumerator RunningProcess(Delegate command, string[] args) {
+        private CoroutineWrapper ExecuteCharacterCommand(string commandName, params string[] args) {
 
-            yield return WaitingForProcessToComplete(command, args);
+            Delegate command = null;
 
-            process = null;
+            CommandDatabase db = subDatabases[DATABASE_CHARACTERS_BASE];
+            if (db.HasCommand(commandName)) {
+
+                command = db.GetCommand(commandName);
+                return StartProcess(commandName, command, args);
+            }
+
+            CharacterConfigData characterConfigData = CharacterManager.instance.GetCharacterConfig(args[0]);
+            switch (characterConfigData.characterType) {
+
+                case Character.CharacterType.Sprite:
+                case Character.CharacterType.SpriteSheet:
+                    db = subDatabases[DATABASE_CHARACTERS_SPRITE];
+                    break;
+
+                case Character.CharacterType.Live2D:
+                    db = subDatabases[DATABASE_CHARACTERS_LIVE2D];
+                    break;
+
+                case Character.CharacterType.Model3D:
+                    db = subDatabases[DATABASE_CHARACTERS_MODEL3D];
+                    break;
+            }
+
+            command = db.GetCommand(commandName);
+
+            if (command != null) {
+                return StartProcess(commandName, command, args);
+            }
+
+            Debug.LogError($"Command Manager was unable to execute command '{commandName}' on character '{args[0]}'. The character name or command may be invalid.");
+            return null;
+        }
+
+        private CoroutineWrapper StartProcess(string commandName, Delegate command, string[] args) {
+
+            System.Guid processID = System.Guid.NewGuid();
+            CommandProcess cmd = new CommandProcess(processID, commandName, command, null, args, null);
+            activeProcesses.Add(cmd);
+
+            Coroutine co = StartCoroutine(RunningProcess(cmd));
+
+            cmd.runningProcess = new CoroutineWrapper(this, co);
+
+            return cmd.runningProcess;
+        }
+
+        public void StopCurrentProcess() {
+
+            if (topProcess != null) {
+                KillProcess(topProcess);
+            }
+        }
+
+        public void StopAllProcesses() {
+
+            foreach (var c in activeProcesses) {
+
+                if (c.runningProcess != null && !c.runningProcess.IsDone) {
+                    c.runningProcess.Stop();
+                }
+
+                c.onTerminateAction?.Invoke();
+            }
+
+            activeProcesses.Clear();
+        }
+
+        private IEnumerator RunningProcess(CommandProcess process) {
+
+            yield return WaitingForProcessToComplete(process.command, process.args);
+
+            KillProcess(process);
+        }
+
+        public void KillProcess(CommandProcess cmd) {
+
+            activeProcesses.Remove(cmd);
+
+            if (cmd.runningProcess != null && !cmd.runningProcess.IsDone) {
+                cmd.runningProcess.Stop();
+            }
+
+            cmd.onTerminateAction?.Invoke();
         }
 
         private IEnumerator WaitingForProcessToComplete(Delegate command, string[] args) {
 
             if (command is Action) {
                 command.DynamicInvoke();
+
             } else if (command is Action<string>) {
-                command.DynamicInvoke(args[0]);
+                command.DynamicInvoke(args.Length == 0 ? string.Empty : args[0]);
+
             } else if (command is Action<string[]>) {
                 command.DynamicInvoke((object)args);
+
             } else if (command is Func<IEnumerator>) {
                 yield return ((Func<IEnumerator>)command)();
+
             } else if (command is Func<string, IEnumerator>) {
-                yield return ((Func<string, IEnumerator>)command)(args[0]);
+                yield return ((Func<string, IEnumerator>)command)(args.Length == 0 ? string.Empty : args[0]);
+
             } else if (command is Func<string[], IEnumerator>) {
                 yield return ((Func<string[], IEnumerator>)command)(args);
             }
+        }
+
+        public void AddTerminationActionToCurrentProcess(UnityAction action) {
+
+            CommandProcess process = topProcess;
+
+            if (process == null) {
+                return;
+            }
+
+            process.onTerminateAction = new UnityEvent();
+            process.onTerminateAction.AddListener(action);
+        }
+
+        public CommandDatabase CreateSubDatabase(string name) {
+
+            name = name.ToLower();
+
+            if (subDatabases.TryGetValue(name, out CommandDatabase db)) {
+
+                Debug.LogWarning($"A databse by the name of '{name}' already exist!");
+                return db;
+            }
+
+            CommandDatabase newDatabase = new CommandDatabase();
+            subDatabases.Add(name, newDatabase);
+
+            return newDatabase;
         }
     }
 }

@@ -98,14 +98,14 @@ namespace CHARACTERS {
             return spriteLayer.TransitionSprite(sprite, speed);
         }
 
-        public override IEnumerator ShowingOrHiding(bool show) {
+        public override IEnumerator ShowingOrHiding(bool show, float speedMultiplier = 1f) {
 
             float targetAlpha = show ? 1f : 0;
             CanvasGroup self = rootCG;
 
             while (self.alpha != targetAlpha) {
 
-                self.alpha = Mathf.MoveTowards(self.alpha, targetAlpha, 3f * Time.deltaTime);
+                self.alpha = Mathf.MoveTowards(self.alpha, targetAlpha, 3f * Time.deltaTime * speedMultiplier);
                 yield return null;
 
             }
@@ -115,9 +115,13 @@ namespace CHARACTERS {
         }
 
         public override void SetColor(Color color) {
+
             base.SetColor(color);
+
+            color = displayColor;
             
             foreach(CharacterSpriteLayer layer in layers) {
+                layer.StopChangingColor();
                 layer.SetColor(color);
             }
         }
@@ -135,6 +139,60 @@ namespace CHARACTERS {
             }
 
             co_changingColor = null;
+        }
+
+        public override IEnumerator Highlighting(bool highlight, float speedMultiplier, bool immediate = false) { // askip le bool highlight sert a rien, apres je veut pas tenter de le supprimer, ca marche
+
+            Color targetColor = displayColor;
+
+            foreach (CharacterSpriteLayer layer in layers) {
+                if (immediate) {
+                    layer.SetColor(displayColor);
+                } else {
+                    layer.TransitionColor(targetColor, speedMultiplier);
+                }
+            }
+
+            yield return null;
+
+            while (layers.Any(l => l.isChangingColor)) {
+                yield return null;
+            }
+
+            co_highlighting = null;
+        }
+
+        public override IEnumerator FaceDirection(bool faceLeft, float speedMultiplier, bool immediate) {
+
+            foreach(CharacterSpriteLayer layer in layers) {
+
+                if (faceLeft) {
+                    layer.FaceLeft(speedMultiplier, immediate);
+                } else {
+                    layer.FaceRight(speedMultiplier, immediate);
+                }
+
+            }
+
+            yield return null;
+
+            while (layers.Any(l => l.isFlipping)) {
+                yield return null;
+            }
+
+            co_flipping = null;
+        }
+
+        public override void OnReceiveCastingExpression(int layer, string expression) {
+
+            Sprite sprite = GetSprite(expression);
+
+            if (sprite == null) {
+                Debug.Log($"Sprite '{expression}' could not be found for character '{name}'");
+                return;
+            }
+
+            TransitionSprite(sprite, layer);
         }
     }
 }

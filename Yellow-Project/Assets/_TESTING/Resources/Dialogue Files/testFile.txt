@@ -1,17 +1,12 @@
-Babar "Salut ravissante jeune femme, veux-tu decouvrir le monde passionant de Java ?" list(items -f long), playSong("Intro Song" -v 1)
 
-setScene("Classroom" -s 5.5)
 
-Charlene "Bonjour, qui etes-vous ?"
+PlayAmbience(RainyMood)
+PlaySong(Calm)
+PlayVoice(wakeup)
+enter Raelin "Yes! It worked!"
 
-Babar "Je suis le grand maitre des dimensions"
-"Le commandeur des croyants"
-"Le souverain des anatides artificiels ocre"
-"Le virtuose de l'elaboration algorithmique en langage cafe"
-"Le gardien des subtilites insaisissables"
-"Frederick Barrios le 4eme, alias Babar"
+StopSong()
+StopAmbience()
 
-Charlene "Au secours j'appele la police"
 
-Babar "Vous voyez le truc ?"
-
+wait(100)
